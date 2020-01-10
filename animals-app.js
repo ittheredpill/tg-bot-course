@@ -16,6 +16,22 @@ function doPost(e) {
   response.send(responseText);
 }
 
+function findAnimal(animalName){
+  return table.select({"name": animalName}).first();
+}
+
+function updateAnimal(animal){
+  var animalRecord = findAnimal(animal.name);
+  var animalUpdated = false;
+  if(animalRecord){
+    animalRecord.setFieldValue("type", animal.type);
+    animalRecord.setFieldValue("can_fly", animal.can_fly);
+    animalRecord.commit();
+    animalUpdated = true;
+  }
+  return animalUpdated;
+}
+
 function addCommand(params){
   var newAnimalName = params[0];
   var newAnimal = {
