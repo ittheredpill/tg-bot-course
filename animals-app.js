@@ -2,6 +2,9 @@ var API_TOKEN = "XXX";
 var SHEET_NAME = 'Animals';
 var table = Sheetfu.getTable(SHEET_NAME);
 
+var STATE_WAIT_TYPE = 1;
+var STATE_WAIT_CAN_FLY = 2;
+
 var commands = {
   "add": addCommand,
   "update": updateCommand,
@@ -26,18 +29,6 @@ function findAnimalsCanFly(animalName){
   return table.select({"can_fly": true});
 }
 
-function updateAnimal(animal){
-  var animalRecord = findAnimal(animal.name);
-  var animalUpdated = false;
-  if(animalRecord){
-    animalRecord.setFieldValue("type", animal.type);
-    animalRecord.setFieldValue("can_fly", animal.can_fly);
-    animalRecord.commit();
-    animalUpdated = true;
-  }
-  return animalUpdated;
-}
-
 function addCommand(params){
   var newAnimalName = params[0];
   var newAnimal = {
@@ -50,20 +41,29 @@ function addCommand(params){
 }
 
 function updateCommand(params){
-  var animalUpdate = params[0];
-  var animalUpdateParts = animalUpdate.split('\n');
-  var animal = {
-    "name": animalUpdateParts[0],
-    "type": animalUpdateParts[1],
-    "can_fly": animalUpdateParts[2],
-  };
-  var updated = updateAnimal(animal);
+  var animalName = params[0];
+  var animal = findAnimal(animalName);
   
-  if (updated){
-    var responseMessage = "Животное <b>" + animal.name + "</b> обновлено";
-  } else {
-    var responseMessage = "Животное <b>" + animal.name + "</b> не найдено";
+  if (animal){
+    animal.setFieldValue("state", STATE_WAIT_TYPE);
+    animal.commit();
+    return "Введите тип животного <b>" + animalName + "</b>:";
   }
+  
+  return "Животное <b>" + animalName + "</b> не нейдено";
+}
+
+function updateRecord(record, value){
+  if(record.getFieldValue("state") == STATE_WAIT_TYPE){
+    record.setFieldValue("type", value);
+    record.setFieldValue("state", STATE_WAIT_CAN_FLY);
+    var responseMessage = "Тип животного <b>" + record.getFieldValue("name") + "</b> обновлен: " + value + "\nВведите признак умения летать (TRUE или FALSE):";
+  } else if(record.getFieldValue("state") == STATE_WAIT_CAN_FLY){
+    record.setFieldValue("can_fly", value);
+    record.setFieldValue("state", "");
+    var responseMessage = "Умение летать животного <b>" + record.getFieldValue("name") + "</b> обновлено: " + value;
+  }
+  record.commit();
   
   return responseMessage;
 }
@@ -81,7 +81,16 @@ function listCanFlyCommand(){
   return responseMessage;
 }
 
+function findWaitState(){
+  return table.select([[{"state": 1}, {"state": 2}]]).first();
+}
+
 function defaultCommand(text){
+  var waitingRecord = findWaitState();
+  if(waitingRecord){
+    return updateRecord(waitingRecord, text);
+  }
+  
   return "Неизвестная команда";
 }
 
