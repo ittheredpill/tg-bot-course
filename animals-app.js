@@ -4,7 +4,8 @@ var table = Sheetfu.getTable(SHEET_NAME);
 
 var commands = {
   "add": addCommand,
-  "update": updateCommand
+  "update": updateCommand,
+  "list_can_fly": listCanFlyCommand
 };
 
 function doPost(e) {
@@ -19,6 +20,10 @@ function doPost(e) {
 
 function findAnimal(animalName){
   return table.select({"name": animalName}).first();
+}
+
+function findAnimalsCanFly(animalName){
+  return table.select({"can_fly": true});
 }
 
 function updateAnimal(animal){
@@ -59,6 +64,19 @@ function updateCommand(params){
   } else {
     var responseMessage = "Животное <b>" + animal.name + "</b> не найдено";
   }
+  
+  return responseMessage;
+}
+
+function listCanFlyCommand(){
+  var animalsCanFly = findAnimalsCanFly();
+  
+  var responseLines = [];
+  for(var i=0; i<animalsCanFly.length; i++){
+    var animal = animalsCanFly[i];
+    responseLines.push(animal.getFieldValue("name") + ", " + animal.getFieldValue("type"));
+  }
+  var responseMessage = responseLines.join("\n");
   
   return responseMessage;
 }
