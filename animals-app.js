@@ -8,7 +8,8 @@ var STATE_WAIT_CAN_FLY = 2;
 var commands = {
   "add": addCommand,
   "update": updateCommand,
-  "list_can_fly": listCanFlyCommand
+  "list_can_fly": listCanFlyCommand,
+  "remove": removeCommand
 };
 
 function doPost(e) {
@@ -79,6 +80,13 @@ function listCanFlyCommand(){
   var responseMessage = responseLines.join("\n");
   
   return responseMessage;
+}
+
+function removeCommand(params){
+  var animalName = params[0];
+  table.deleteSelection({"name": animalName});
+  table.commit();
+  return "Животное <b>" + animalName + "</b> удалено";
 }
 
 function findWaitState(){
