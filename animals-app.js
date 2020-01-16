@@ -15,11 +15,12 @@ var commands = {
 function doPost(e) {
   var update = JSON.parse(e.postData.contents);
   var request = new Request(update);
-  var chatId = update.message.chat.id;
+  var chatId = request.getChatId();
   var response = new BotMessage(chatId);
   
   var responseText = route(request);
-  response.send(responseText);
+  var responseKeyboard = getKeyboard(request);
+  response.send(responseText, responseKeyboard);
 }
 
 function findAnimal(animalName){
@@ -58,7 +59,7 @@ function updateRecord(record, value){
   if(record.getFieldValue("state") == STATE_WAIT_TYPE){
     record.setFieldValue("type", value);
     record.setFieldValue("state", STATE_WAIT_CAN_FLY);
-    var responseMessage = "Тип животного <b>" + record.getFieldValue("name") + "</b> обновлен: " + value + "\nВведите признак умения летать (TRUE или FALSE):";
+    var responseMessage = "Тип животного <b>" + record.getFieldValue("name") + "</b> обновлен: " + value + "\nЖивотное умеет летать?";
   } else if(record.getFieldValue("state") == STATE_WAIT_CAN_FLY){
     record.setFieldValue("can_fly", value);
     record.setFieldValue("state", "");
@@ -110,17 +111,41 @@ function route(request){
   }
 }
 
+function getKeyboard(request){
+  var keyboard = null;
+  var waitingRecord = findWaitState();
+  if(waitingRecord && waitingRecord.getFieldValue("state") == STATE_WAIT_CAN_FLY){
+    keyboard = [[
+      {"text": "Да", "callback_data": "TRUE"},
+      {"text": "Нет", "callback_data": "FALSE"}
+    ]]
+  };
+  return keyboard;
+}
+
 var Request = function(update){
-  var command, params;
+  var command, params, chatId;
   
-  var message = update.message.text.toString();
+  if(update.hasOwnProperty('callback_query')){
+    var callback = update.callback_query;
+    var message = callback.data.toString();
+    this.chatId = callback.message.chat.id;
+  } else {
+    var message = update.message.text.toString();
+    this.chatId = update.message.chat.id;
+  }
   var messageParts = message.split(' ');
+  
   if (messageParts.length >= 1 && messageParts[0].indexOf('/') == 0) {
     this.command = messageParts.shift().substring(1);
     this.params = messageParts;
   } else {
     this.params = message;
   }
+  
+  this.getChatId = function(){
+    return this.chatId;
+  };
   
   this.getCommand = function(){
     return this.command;
