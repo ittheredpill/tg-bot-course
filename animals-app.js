@@ -1,5 +1,6 @@
 var API_TOKEN = "XXX";
 var SHEET_NAME = 'Animals';
+var ADMIN_CHAT_ID = XXX; // замени на свой id в telegram
 var table = Sheetfu.getTable(SHEET_NAME);
 
 var STATE_WAIT_TYPE = 1;
@@ -21,6 +22,22 @@ function doPost(e) {
   var responseText = route(request);
   var responseKeyboard = getKeyboard(request);
   response.send(responseText, responseKeyboard);
+}
+
+function jobCheckAnimals(){
+  var incompleteEnimalRecords = table.select([[{"type": ""}, {"can_fly": ""}]])
+  
+  if(incompleteEnimalRecords.length > 0){
+    var responseLines = [];
+    for(var i=0; i<incompleteEnimalRecords.length; i++){
+      var animal = incompleteEnimalRecords[i];
+      responseLines.push("<b>" + animal.getFieldValue("name") + "</b>");
+    }
+    var responseMessage = "Данные по\n<b>" + responseLines.join("\n") + "</b>\nне полны";
+    var response = new BotMessage(ADMIN_CHAT_ID);
+    
+    response.send(responseMessage);
+  }
 }
 
 function findAnimal(animalName){
