@@ -7,7 +7,8 @@ var table = Sheetfu.getTable(SHEET_NAME);
 */
 var commands = {
   "add": addCommand,
-  "update": updateCommand
+  "update": updateCommand,
+  "list_flying": listFlyingCommand
 };
 
 /**
@@ -46,6 +47,20 @@ function updateCommand(params){
   return responseMessage;
 }
 
+// Обработчик команды /list_flying
+function listFlyingCommand(){
+  var flyingAnimals = findFlyingAnimals();
+
+  var responseLines = [];
+  for(var i=0; i<flyingAnimals.length; i++){
+    var animal = flyingAnimals[i];
+    responseLines.push(animal.getFieldValue("name") + ", " + animal.getFieldValue("type"));
+  }
+  var responseMessage = responseLines.join("\n");
+
+  return responseMessage;
+}
+
 // Обработчик для неизвестных команд (не описанных в словарике commands)
 function defaultCommand(text){
   return "Неизвестная команда";
@@ -65,6 +80,11 @@ function getKeyboard(request){
 // Поиск животного по названию
 function findAnimal(animalName){
   return table.select({"name": animalName}).first();
+}
+
+// Поиск всех животных, умеющих летать 
+function findFlyingAnimals(){
+  return table.select({"can_fly": true});
 }
 
 // Поиск и обновление полей в записи о животном
