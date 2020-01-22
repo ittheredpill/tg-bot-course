@@ -6,7 +6,8 @@ var table = Sheetfu.getTable(SHEET_NAME);
   Словарик со связями команд и обрабатывающих их функций
 */
 var commands = {
-  "add": addCommand
+  "add": addCommand,
+  "update": updateCommand
 };
 
 /**
@@ -23,6 +24,26 @@ function addCommand(params){
   table.commit();
   
   return "Животное <b>" + params[0] + "</b> добавлено!";
+}
+
+// Обработчик команды /update
+function updateCommand(params){
+  var animalUpdate = params[0];
+  var animalUpdateParts = animalUpdate.split('\n');
+  var animal = {
+    "name": animalUpdateParts[0],
+    "type": animalUpdateParts[1],
+    "can_fly": animalUpdateParts[2],
+  };
+  var updated = updateAnimal(animal);
+
+  if (updated){
+    var responseMessage = "Животное <b>" + animal.name + "</b> обновлено";
+  } else {
+    var responseMessage = "Животное <b>" + animal.name + "</b> не найдено";
+  }
+
+  return responseMessage;
 }
 
 // Обработчик для неизвестных команд (не описанных в словарике commands)
