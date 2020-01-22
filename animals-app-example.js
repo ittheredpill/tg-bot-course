@@ -44,7 +44,7 @@ function updateCommand(params){
   return "Животное <b>" + animalName + "</b> не нейдено";
 }
 
-// Обработчик команды /update
+// Обработчик команды /update в процессе транзакции
 function updateRecord(record, value){
   if(record.getFieldValue("state") == STATE_WAIT_TYPE){
     record.setFieldValue("type", value);
