@@ -38,6 +38,28 @@ function getKeyboard(request){
 }
 
 /**
+  Функции работы с данными
+*/
+
+// Поиск животного по названию
+function findAnimal(animalName){
+  return table.select({"name": animalName}).first();
+}
+
+// Поиск и обновление полей в записи о животном
+function updateAnimal(animal){
+  var animalRecord = findAnimal(animal.name);
+  var animalUpdated = false;
+  if(animalRecord){
+    animalRecord.setFieldValue("type", animal.type);
+    animalRecord.setFieldValue("can_fly", animal.can_fly);
+    animalRecord.commit();
+    animalUpdated = true;
+  }
+  return animalUpdated;
+}
+
+/**
   Специальный метод, запускаемый при получении запроса от бота
 */
 function doPost(e) {
