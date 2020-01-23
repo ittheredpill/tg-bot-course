@@ -11,7 +11,8 @@ var STATE_WAIT_CAN_FLY = 2;
 var commands = {
   "add": addCommand,
   "update": updateCommand,
-  "list_flying": listFlyingCommand
+  "list_flying": listFlyingCommand,
+  "remove": removeCommand
 };
 
 /**
@@ -72,6 +73,14 @@ function listFlyingCommand(){
   var responseMessage = responseLines.join("\n");
 
   return responseMessage;
+}
+
+// Обработчик команды /remove
+function removeCommand(params){
+  var animalName = params[0];
+  table.deleteSelection({"name": animalName});
+  table.commit();
+  return "Животное <b>" + animalName + "</b> удалено";
 }
 
 // Обработчик для неизвестных команд (не описанных в словарике commands)
