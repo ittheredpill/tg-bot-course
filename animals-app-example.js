@@ -50,7 +50,7 @@ function updateRecord(record, value){
   if(record.getFieldValue("state") == STATE_WAIT_TYPE){
     record.setFieldValue("type", value);
     record.setFieldValue("state", STATE_WAIT_CAN_FLY);
-    var responseMessage = "Тип животного <b>" + record.getFieldValue("name") + "</b> обновлен: " + value + "\nЖивотное умеет летать? (TRUE или FALSE)";
+    var responseMessage = "Тип животного <b>" + record.getFieldValue("name") + "</b> обновлен: " + value + "\nЖивотное умеет летать?";
   } else if(record.getFieldValue("state") == STATE_WAIT_CAN_FLY){
     record.setFieldValue("can_fly", value);
     record.setFieldValue("state", "");
@@ -97,7 +97,15 @@ function defaultCommand(text){
   Функция формирования клавиатур (кнопок) 
 */
 function getKeyboard(request){
-  return null;
+  var keyboard = null;
+  var waitingRecord = findWaitState();
+  if(waitingRecord && waitingRecord.getFieldValue("state") == STATE_WAIT_CAN_FLY){
+    keyboard = [[
+      {"text": "Да", "callback_data": "TRUE"},
+      {"text": "Нет", "callback_data": "FALSE"}
+    ]]
+  };
+  return keyboard;
 }
 
 /**
